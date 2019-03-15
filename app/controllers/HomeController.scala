@@ -3,48 +3,46 @@ package controllers
 import javax.inject._
 import play.api.mvc._
 import scalikejdbc._
-import scalikejdbc.config.DBs
 
-case class User(name: String)
+case class User(id: Long, name: String)
 
 object User extends SQLSyntaxSupport[User] {
+  private[this] val u = User.syntax("u")
 
   override val schemaName: Option[String] = None
   override val tableName: String = "users"
+  override lazy val columns: Seq[String] = Seq("id", "name")
 
-  override def columnNames: Seq[String] = Seq("name")
+  def apply(rn: ResultName[User])(rs: WrappedResultSet): User = autoConstruct(rs, rn)
 
-  def apply(rs: WrappedResultSet) = new User(
-    rs.string("name")
-  )
+  def create(name: String)(implicit s: DBSession = AutoSession): Long =
+    withSQL {
+      insertInto(User).values(null, name)
+    }.updateAndReturnGeneratedKey().apply()
+
+  def findByName(name: String)(implicit s: DBSession = AutoSession): Option[User] = withSQL {
+    select.from(User as u).where.eq(u.name, name)
+  }.map(User(u.resultName)).single().apply()
 }
 
 @Singleton
 class HomeController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   def index() = Action { implicit request: Request[AnyContent] => {
-    val u = User.syntax("u")
-    val name = "John"
 
     DB.autoCommit { implicit session =>
       sql"""
         drop table if exists users;
 
         create table users(
+          id serial not null primary key,
           name varchar(64)
         )
       """.execute.apply()
     }
 
-    DB.localTx { implicit session =>
-      withSQL {
-        insertInto(User).values(name)
-      }.execute().apply()
-    }
-
-    val user = DB.readOnly { implicit session =>
-      withSQL {
-        select.from(User as u)
-      }.map(rs => User(rs)).single().apply()
+    val user = DB.localTx { implicit session =>
+      User.create("John")
+      User.findByName("John")
     }
 
     Ok(user.toString)
