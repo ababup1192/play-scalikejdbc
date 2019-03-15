@@ -21,27 +21,29 @@ object User extends SQLSyntaxSupport[User] {
 
 @Singleton
 class HomeController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
-  implicit val session: AutoSession.type = AutoSession
-
   def index() = Action { implicit request: Request[AnyContent] => {
     val u = User.syntax("u")
     val name = "John"
 
-    sql"""
-    drop table if exists users;
+    DB.localTx { implicit session =>
+      sql"""
+        drop table if exists users;
 
-    create table users(
-      name varchar(64)
-    )
-    """.execute.apply()
+        create table users(
+          name varchar(64)
+        )
+      """.execute.apply()
 
-    withSQL {
-      insertInto(User).values(name)
-    }.execute().apply()
+      withSQL {
+        insertInto(User).values(name)
+      }.execute().apply()
+    }
 
-    val user = withSQL {
-      select.from(User as u)
-    }.map(rs => User(rs)).single().apply()
+    val user = DB.readOnly { implicit session =>
+      withSQL {
+        select.from(User as u)
+      }.map(rs => User(rs)).single().apply()
+    }
 
     Ok(user.toString)
   }
