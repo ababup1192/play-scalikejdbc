@@ -15,6 +15,7 @@ libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.197",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   guice,
+  "org.scalikejdbc" %% "scalikejdbc-test"   % "3.3.2"   % "test",
   "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test
 )
 

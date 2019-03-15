@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject._
 import play.api.mvc._
-import repository.UserDao
+import models.UserDao
 import scalikejdbc._
 
 @Singleton
