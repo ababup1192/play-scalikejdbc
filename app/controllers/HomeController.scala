@@ -25,7 +25,7 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     val u = User.syntax("u")
     val name = "John"
 
-    DB.localTx { implicit session =>
+    DB.autoCommit { implicit session =>
       sql"""
         drop table if exists users;
 
@@ -33,7 +33,9 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
           name varchar(64)
         )
       """.execute.apply()
+    }
 
+    DB.localTx { implicit session =>
       withSQL {
         insertInto(User).values(name)
       }.execute().apply()
