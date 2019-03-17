@@ -1,45 +1,73 @@
 package controllers
 
+import akka.actor.ActorSystem
+import akka.stream.{ActorMaterializer, Materializer}
+import models.User
+import org.mockito.Mockito._
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
-import play.api.test._
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
+import play.api.mvc.{DefaultActionBuilder, EssentialAction}
 import play.api.test.Helpers._
+import play.api.test._
+import services.UserService
 
-/**
- * Add your spec here.
- * You can mock out a whole application including requests, plugins etc.
- *
- * For more information, see https://www.playframework.com/documentation/latest/ScalaTestingWithScalaTest
- */
-class MainControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
+class MainControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting with MockitoSugar {
+  "MainController GET" should {
+    "/users" can {
+      "ユーザがいない -> Ok([])。" in {
+        val userService = mock[UserService]
+        when(userService.listUser()) thenReturn Seq()
 
- /* "HomeController GET" should {
+        val controller = new MainController(stubControllerComponents(), userService)
+        val result = controller.listUser().apply(FakeRequest(GET, "/users"))
 
-    "render the index page from a new instance of controller" in {
-      val controller = new HomeController(stubControllerComponents())
-      val home = controller.index().apply(FakeRequest(GET, "/"))
+        status(result) mustBe OK
+        contentType(result) mustBe Some("application/json")
+        contentAsJson(result) mustBe Json.arr()
+      }
 
-      status(home) mustBe OK
-      contentType(home) mustBe Some("text/html")
-      contentAsString(home) must include ("Welcome to Play")
+      "3人のユーザ -> Ok([{}, {}, {}])。" in {
+        val userService = mock[UserService]
+        when(userService.listUser()) thenReturn Seq(User(1, "John"), User(2, "Mike"), User(3, "Mary"))
+
+        val controller = new MainController(stubControllerComponents(), userService)
+        val listUsers = controller.listUser().apply(FakeRequest(GET, "/users"))
+
+        status(listUsers) mustBe OK
+        contentType(listUsers) mustBe Some("application/json")
+        contentAsJson(listUsers) mustBe Json.arr(
+          Json.obj("id" -> 1, "name" -> "John"),
+          Json.obj("id" -> 2, "name" -> "Mike"),
+          Json.obj("id" -> 3, "name" -> "Mary")
+        )
+      }
     }
+  }
 
-    "render the index page from the application" in {
-      val controller = inject[HomeController]
-      val home = controller.index().apply(FakeRequest(GET, "/"))
+  "MainController POST" should {
+    "/users" when {
+      implicit lazy val materializer: Materializer = app.materializer
 
-      status(home) mustBe OK
-      contentType(home) mustBe Some("text/html")
-      contentAsString(home) must include ("Welcome to Play")
+      "正しいJsonを Post -> Ok({id: 1})。" in {
+        val name = "Foo"
+        val id = 1L
+        val userService = mock[UserService]
+        when(userService.createUser(name)) thenReturn id
+
+        val controller = new MainController(stubControllerComponents(), userService)
+        val action = controller.createUser()
+        val request = FakeRequest(POST, "/users").withJsonBody(Json.obj("name" -> name))
+
+        val result = call(action, request)
+
+        status(result) mustBe OK
+        contentType(result) mustBe Some("application/json")
+        contentAsJson(result) mustBe Json.obj("id" -> id)
+      }
     }
-
-    "render the index page from the router" in {
-      val request = FakeRequest(GET, "/")
-      val home = route(app, request).get
-
-      status(home) mustBe OK
-      contentType(home) mustBe Some("text/html")
-      contentAsString(home) must include ("Welcome to Play")
-    }
-  }*/
+  }
 }

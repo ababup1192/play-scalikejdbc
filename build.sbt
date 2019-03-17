@@ -18,8 +18,9 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "8.0.15",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   guice,
-  "org.scalikejdbc" %% "scalikejdbc-test"   % "3.3.2"   % "test",
-  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test
+  "org.scalikejdbc" %% "scalikejdbc-test" % "3.3.2" % Test,
+  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test,
+  "org.mockito" % "mockito-core" % "2.25.1" % Test
 )
 
 // Adds additional packages into Twirl
