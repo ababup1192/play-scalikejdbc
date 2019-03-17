@@ -64,7 +64,7 @@ class $model;format="Camel"$ControllerSpec extends PlaySpec with GuiceOneAppPerT
     "process form" in {
       val request = {
         FakeRequest(POST, "/$model;format="camel"$")
-          .withFormUrlEncodedBody("name" -> "play", "age" -> "4")
+          .withFormUrlEncodedBody("name" -> "default", "age" -> "4")
       }
       val home = route(app, request).get
 

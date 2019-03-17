@@ -16,9 +16,11 @@ object UserDao {
   private[this] val u = User.syntax("u")
 
   def create(name: String)(implicit s: DBSession = AutoSession): Long =
-    withSQL {
-      insertInto(User).values(null, name)
-    }.updateAndReturnGeneratedKey().apply()
+      sql"insert into users (name) values ($name)".updateAndReturnGeneratedKey().apply()
+
+  def findAll()(implicit s: DBSession = AutoSession): Seq[User] = withSQL {
+    select.from(User as u)
+  }.map(User(u.resultName)).list().apply()
 
   def findById(id: Long)(implicit s: DBSession = AutoSession): Option[User] = withSQL {
     select.from(User as u).where.eq(u.id, id)

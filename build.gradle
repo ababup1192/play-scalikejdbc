@@ -1,5 +1,5 @@
 plugins {
-    id 'play'
+    id 'default'
     id 'idea'
 }
 
@@ -58,11 +58,11 @@ def dependencyFor(String lib, String scalaVersion, String version) {
 
 dependencies {
 
-    play dependencyFor("com.typesafe.play:play-guice", scalaVersion, playVersion)
-    play dependencyFor("com.typesafe.play:play-logback", scalaVersion, playVersion)
-    play dependencyFor("com.typesafe.play:filters-helpers", scalaVersion, playVersion)
+    play dependencyFor("com.typesafe.default:default-guice", scalaVersion, playVersion)
+    play dependencyFor("com.typesafe.default:default-logback", scalaVersion, playVersion)
+    play dependencyFor("com.typesafe.default:filters-helpers", scalaVersion, playVersion)
 
-    playTest dependencyFor("org.scalatestplus.play:scalatestplus-play", scalaVersion, "4.0.1")
+    playTest dependencyFor("org.scalatestplus.default:scalatestplus-default", scalaVersion, "4.0.1")
 }
 
 repositories {

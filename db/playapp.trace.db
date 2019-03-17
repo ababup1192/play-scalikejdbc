@@ -1,0 +1,4 @@
+2019-03-17 08:21:44 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: テーブル "USERS" が見つかりません
+Table "USERS" not found; SQL statement:
+insert into users values (?, ?) [42102-197]

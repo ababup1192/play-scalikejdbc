@@ -11,7 +11,8 @@ object DBSettings {
 
   def initialize(): Unit = this.synchronized {
     if (isInitialized) return
-    DBs.setupAll()
+    Class.forName("org.h2.Driver")
+    ConnectionPool.singleton("jdbc:h2:mem:play", "user", "pass")
     GlobalSettings.loggingSQLErrors = false
     GlobalSettings.sqlFormatter = SQLFormatterSettings("utils.HibernateSQLFormatter")
     DBInitializer.run()
