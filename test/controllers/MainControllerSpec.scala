@@ -1,22 +1,20 @@
 package controllers
 
-import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.Materializer
 import models.User
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
-import play.api.Application
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import play.api.mvc.{DefaultActionBuilder, EssentialAction}
+import play.api.mvc.ControllerComponents
 import play.api.test.Helpers._
 import play.api.test._
 import services.UserService
 
 class MainControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting with MockitoSugar {
   "MainController GET" should {
+
     "/users" can {
       "ユーザがいない -> Ok([])。" in {
         val userService = mock[UserService]
@@ -49,8 +47,8 @@ class MainControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
   }
 
   "MainController POST" should {
+    implicit lazy val materializer: Materializer = app.materializer
     "/users" when {
-      implicit lazy val materializer: Materializer = app.materializer
 
       "正しいJsonを Post -> Ok({id: 1})。" in {
         val name = "Foo"
@@ -58,7 +56,8 @@ class MainControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
         val userService = mock[UserService]
         when(userService.createUser(name)) thenReturn id
 
-        val controller = new MainController(stubControllerComponents(), userService)
+        val controllerComponents = inject[ControllerComponents]
+        val controller = new MainController(controllerComponents, userService)
         val action = controller.createUser()
         val request = FakeRequest(POST, "/users").withJsonBody(Json.obj("name" -> name))
 
